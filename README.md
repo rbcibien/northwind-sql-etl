@@ -71,6 +71,14 @@ EXECUTE FUNCTION refresh_sales_accumulated_monthly_mv();
 
 **Caso Stored Procedured:**
 
+```mermaid
+graph TB;
+    D[Procedimento atualizar_titulo_employee] -- Chamada --> A[Tabela employees];
+    A -- Atualização de título --> B[Trigger trg_auditoria_titulo];
+    B -- Registro em employees_auditoria --> C[Tabela employees_auditoria];
+```
+
+
 Este conjunto de comandos SQL visa monitorar e atualizar alterações nos títulos dos funcionários na tabela `employees` e registrar essas mudanças na tabela `employees_auditoria`.
 
 1. **Tabela de Auditoria de Funcionários (`employees_auditoria`):** Uma tabela foi criada para registrar as mudanças nos títulos dos funcionários. Ela possui os seguintes campos:
