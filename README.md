@@ -31,44 +31,6 @@ Este conjunto de comandos SQL define uma ETL (Extração, Transformação e Carr
     
 2. **Trigger para Atualização da Visualização (`trg_refresh_sales_accumulated_monthly_mv_order_details` e `trg_refresh_sales_accumulated_monthly_mv_orders`):** Duas triggers foram criadas para garantir que a visualização materializada seja atualizada sempre que houver alterações nas tabelas `order_details` e `orders`. Quando ocorrerem inserções, atualizações ou exclusões nessas tabelas, as triggers acionarão a função `refresh_sales_accumulated_monthly_mv`, que atualizará a visualização materializada.
 
-```sql
-CREATE MATERIALIZED VIEW sales_accumulated_monthly_mv AS
-SELECT
-    EXTRACT(YEAR FROM o.order_date) AS year,
-    EXTRACT(MONTH FROM o.order_date) AS month,
-    SUM(od.unit_price * od.quantity * (1 - od.discount)) AS accumulated_sales
-FROM
-    order_details od
-JOIN
-    orders o ON o.order_id = od.order_id
-GROUP BY
-    EXTRACT(YEAR FROM o.order_date),
-    EXTRACT(MONTH FROM o.order_date)
-ORDER BY
-    EXTRACT(YEAR FROM o.order_date),
-    EXTRACT(MONTH FROM o.order_date);
-```
-
-```sql
-CREATE OR REPLACE FUNCTION refresh_sales_accumulated_monthly_mv()
-RETURNS TRIGGER AS $$
-BEGIN
-    REFRESH MATERIALIZED VIEW sales_accumulated_monthly_mv;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_refresh_sales_accumulated_monthly_mv_order_details
-AFTER INSERT OR UPDATE OR DELETE ON order_details
-FOR EACH STATEMENT
-EXECUTE FUNCTION refresh_sales_accumulated_monthly_mv();
-
-CREATE TRIGGER trg_refresh_sales_accumulated_monthly_mv_orders
-AFTER INSERT OR UPDATE OR DELETE ON orders
-FOR EACH STATEMENT
-EXECUTE FUNCTION refresh_sales_accumulated_monthly_mv();
-```
-
 **Caso Stored Procedured:**
 
 ```mermaid
@@ -90,49 +52,6 @@ Este conjunto de comandos SQL visa monitorar e atualizar alterações nos títul
 2. **Trigger para Auditoria de Títulos (`trg_auditoria_titulo`):** Uma trigger foi criada para ser acionada após a atualização do título na tabela `employees`. Esta trigger chama uma função que registra a mudança na tabela `employees_auditoria`.
     
 3. **Procedimento para Atualização de Título (`atualizar_titulo_employee`):** Uma stored procedure foi criada para facilitar a atualização do título de um funcionário. Ela aceita o ID do funcionário e o novo título como parâmetros e executa uma atualização na tabela `employees`.
-
-```sql
-CREATE TABLE employees_auditoria (
-    employee_id INT,
-    nome_anterior VARCHAR(100),
-    nome_novo VARCHAR(100),
-    data_modificacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-```sql
-CREATE OR REPLACE FUNCTION registrar_auditoria_titulo()
-RETURNS TRIGGER AS $$
-BEGIN
-    INSERT INTO employees_auditoria (employee_id, nome_anterior, nome_novo)
-    VALUES (NEW.employee_id, OLD.title, NEW.title);
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_auditoria_titulo
-AFTER UPDATE OF title ON employees
-FOR EACH ROW
-EXECUTE FUNCTION registrar_auditoria_titulo();
-```
-
-```sql
-CREATE OR REPLACE PROCEDURE atualizar_titulo_employee(
-    p_employee_id INT,
-    p_new_title VARCHAR(100)
-)
-AS $$
-BEGIN
-    UPDATE employees
-    SET title = p_new_title
-    WHERE employee_id = p_employee_id;
-END;
-$$ LANGUAGE plpgsql;
-```
-
-```sql
-CALL atualizar_titulo_employee(1, 'Estagiario');
-```
 
 **Conclusão:**
 
