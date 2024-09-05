@@ -36,11 +36,11 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER trg_refresh_sales_accumulated_monthly_mv_order_details
     AFTER INSERT OR UPDATE OR DELETE ON order_details
     FOR EACH STATEMENT
-    EXECUTE refresh_sales_accumulated_monthly_mv();
+    EXECUTE PROCEDURE refresh_sales_accumulated_monthly_mv();
 
 CREATE OR REPLACE TRIGGER trg_refresh_sales_accumulated_monthly_mv_orderS
     AFTER INSERT OR UPDATE OR DELETE ON order
     FOR EACH STATEMENT
-    EXECUTE refresh_sales_accumulated_monthly_mv();
+    EXECUTE PROCEDURE refresh_sales_accumulated_monthly_mv();
 
 -- Stored Procedures
