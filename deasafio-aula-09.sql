@@ -38,8 +38,8 @@ CREATE OR REPLACE TRIGGER trg_refresh_sales_accumulated_monthly_mv_order_details
     FOR EACH STATEMENT
     EXECUTE PROCEDURE refresh_sales_accumulated_monthly_mv();
 
-CREATE OR REPLACE TRIGGER trg_refresh_sales_accumulated_monthly_mv_orderS
-    AFTER INSERT OR UPDATE OR DELETE ON order
+CREATE OR REPLACE TRIGGER trg_refresh_sales_accumulated_monthly_mv_orders
+    AFTER INSERT OR UPDATE OR DELETE ON orders
     FOR EACH STATEMENT
     EXECUTE PROCEDURE refresh_sales_accumulated_monthly_mv();
 
